@@ -48,9 +48,23 @@ class Products with ChangeNotifier {
 
   List<Product> favProd = [];
 
-  void addProduct() {
-    //_items.add(value);
+  void addProduct(Product product) {
+    final newProd = Product(
+      title: product.title,
+      price: product.price,
+      description: product.description,
+      imageUrl: product.imageUrl,
+      id: DateTime.now().toString(),
+    );
+    allItems.add(newProd);
+    print("added");
+    print(newProd.title);
     notifyListeners();
+  }
+
+  void updateProduct(String id, Product newProduct) {
+    final prodIndex = allItems.indexWhere((prod) => prod.id == id);
+    allItems[prodIndex] = newProduct;
   }
 
   // var _showFavouriteOnly = false;
@@ -64,6 +78,16 @@ class Products with ChangeNotifier {
   //   _showFavouriteOnly = false;
   //   notifyListeners();
   // }
+
+  Product findById(String prodId) {
+    var foundIndex = items.indexWhere((prod) => prod.id == prodId);
+    return items[foundIndex];
+  }
+
+  void deleteProd(String prodId) {
+    allItems.removeWhere((prod) => prod.id == prodId);
+    notifyListeners();
+  }
 }
 
 void showListUpdates(List favList) {
