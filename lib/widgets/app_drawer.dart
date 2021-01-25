@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import '../screens/user_prod_screen.dart';
 import '../screens/orders_screen.dart';
 import '../screens/prod_overview_screen.dart';
+import 'package:provider/provider.dart';
+import '../providers/auth.dart';
 
 class AppDrawer extends StatelessWidget {
   @override
@@ -10,7 +12,7 @@ class AppDrawer extends StatelessWidget {
       child: Column(
         children: [
           AppBar(
-            title: Text("Helloo"),
+            title: Text(""),
             automaticallyImplyLeading: false,
           ),
           Divider(),
@@ -38,7 +40,15 @@ class AppDrawer extends StatelessWidget {
               Navigator.of(context)
                   .pushReplacementNamed(UserProductScreen.route);
             },
-          )
+          ),
+          Spacer(),
+          ListTile(
+            leading: Icon(Icons.exit_to_app),
+            title: Text("Logout"),
+            onTap: () {
+              Provider.of<Auth>(context).logout();
+            },
+          ),
         ],
       ),
     );

@@ -4,6 +4,7 @@ import '../providers/product.dart';
 import 'package:provider/provider.dart';
 import '../screens/prod_detail_screen.dart';
 import '../providers/cart.dart';
+import '../providers/auth.dart';
 
 class ProductItem extends StatelessWidget {
   // final Product product;
@@ -15,6 +16,7 @@ class ProductItem extends StatelessWidget {
     final cart = Provider.of<Cart>(context,
         listen:
             false); // listen is false because we dont want to update the widget, only pass data
+    final authData = Provider.of<Auth>(context, listen: false);
 
     return Card(
       elevation: 10,
@@ -39,7 +41,10 @@ class ProductItem extends StatelessWidget {
               icon:
                   Icon(product.isFav ? Icons.favorite : Icons.favorite_border),
               onPressed: () {
-                product.toggleFavStatus();
+                product.toggleFavStatus(
+                  authData.token,
+                  authData.userId,
+                );
                 print(product.title);
                 print(product.isFav);
                 //  showListUpdates(favList);

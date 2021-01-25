@@ -14,14 +14,17 @@ class OrderItem {
 
 class Orders with ChangeNotifier {
   List<OrderItem> _orders = [];
+  String token;
+  String userId;
+  Orders(this.token, this.userId, this._orders);
 
   List<OrderItem> get orders {
     return [..._orders];
   }
 
   Future<void> addOrders(List<CartItem> cartProd, double total) async {
-    const url =
-        "https://shop-app-472ce-default-rtdb.firebaseio.com/orders.json";
+    final url =
+        "https://shop-app-472ce-default-rtdb.firebaseio.com/orders/$userId.json?=auth=$token";
     final timestamp = DateTime.now();
     final response = await http.post(
       url,
@@ -46,6 +49,36 @@ class Orders with ChangeNotifier {
           amount: total,
           product: cartProd),
     );
+    notifyListeners();
+  }
+
+  Future<void> fetchOrders() async {
+    final url =
+        "https://shop-app-472ce-default-rtdb.firebaseio.com/orders/$userId.json?=auth=$token";
+    final response = await http.get(url);
+    final List<OrderItem> loadedOrders = [];
+    final extractedData = jsonDecode(response.body) as Map<String, dynamic>;
+    if (extractedData == null) {
+      return;
+    }
+    extractedData.forEach((orderid, orderdata) {
+      loadedOrders.add(
+        OrderItem(
+          id: orderid,
+          amount: orderdata['amount'],
+          dateTime: DateTime.parse(orderdata['dateTime']),
+          product: (orderdata['product'] as List)
+              .map((e) => CartItem(
+                    id: e['id'],
+                    price: e['price'],
+                    quantity: e['quantity'],
+                    title: e['title'],
+                  ))
+              .toList(),
+        ),
+      );
+    });
+    _orders = loadedOrders;
     notifyListeners();
   }
 }

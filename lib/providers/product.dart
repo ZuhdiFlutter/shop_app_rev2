@@ -19,18 +19,18 @@ class Product with ChangeNotifier {
     @required this.description,
   });
 
-  Future<void> toggleFavStatus() async {
+  Future<void> toggleFavStatus(String token, String userId) async {
     final oldStatus = isFav;
     isFav = !isFav;
     notifyListeners();
     final url =
-        "https://shop-app-472ce-default-rtdb.firebaseio.com/products/$id.json";
+        "https://shop-app-472ce-default-rtdb.firebaseio.com/userFav/$userId/$id.json?=auth=$token";
     try {
-      await http.patch(
+      await http.put(
         url,
-        body: jsonEncode({
-          'isFav': isFav,
-        }),
+        body: jsonEncode(
+          isFav,
+        ),
       );
     } catch (error) {
       isFav = oldStatus;

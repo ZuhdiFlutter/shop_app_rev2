@@ -51,8 +51,8 @@ class Products with ChangeNotifier {
   List<Product> favProd = [];
 
   Future<void> addProduct(Product product) {
-    const url =
-        "https://shop-app-472ce-default-rtdb.firebaseio.com/products.json";
+    final url =
+        "https://shop-app-472ce-default-rtdb.firebaseio.com/products.json?=auth=$token";
     return http
         .post(
       url,
@@ -61,7 +61,7 @@ class Products with ChangeNotifier {
         'price': product.price,
         'description': product.description,
         'imageUrl': product.imageUrl,
-        'isFav': product.isFav,
+        'creatorId': userId,
       }),
     )
         .then(
@@ -93,39 +93,59 @@ class Products with ChangeNotifier {
     return presence;
   }
 
-  Future<void> fetchProd() async {
-    const url =
-        "https://shop-app-472ce-default-rtdb.firebaseio.com/products.json";
+  String token;
+  String userId;
+  Products(this.token, this.userId, this.allItems);
+
+  Future<void> fetchProd([bool filterByUser = false]) async {
+    final filterString =
+        filterByUser == true ? '&orderBy="creatorId"&equalTo="$userId"' : '';
+    final url =
+        'https://shop-app-472ce-default-rtdb.firebaseio.com/products.json?=auth=$token$filterString';
+
+    final favUrl =
+        "https://shop-app-472ce-default-rtdb.firebaseio.com/userFav/$userId.json?=auth=$token";
+
     try {
       final response = await http.get(url);
-      final data = json.decode(response.body) as Map<String, dynamic>;
+      final favResponse = await http.get(favUrl);
+      final data = jsonDecode(response.body) as Map<String, dynamic>;
+      final favData = jsonDecode(favResponse.body) as Map<String, dynamic>;
       final List<Product> loadedProd = [];
-      data.forEach((prodId, prodData) {
-        if (presentId(prodId).isEmpty) {
-          loadedProd.add(Product(
-            id: prodId,
-            title: prodData['title'],
-            price: prodData['price'],
-            description: prodData['description'],
-            imageUrl: prodData['imageUrl'],
-            isFav: prodData['isFav'],
-          ));
-          print(prodData['title']);
-        } else
-          return;
-      });
+      if (data == null) {
+        return;
+      }
+
+      data.forEach(
+        (prodId, prodData) {
+          print(prodData); // problem is permission denied!!!!!!!!!!!!!!!!
+          if (presentId(prodId).isEmpty) {
+            loadedProd.add(Product(
+              id: prodId,
+              title: prodData['title'],
+              price: prodData['price'],
+              description: prodData['description'],
+              imageUrl: prodData['imageUrl'],
+              isFav: favData == null ? false : favData[prodId] ?? false,
+            ));
+            print(prodData['title']);
+          } else
+            return;
+        },
+      );
       allItems = allItems + loadedProd;
+
       print(data);
       notifyListeners();
     } catch (error) {
-      throw error;
+      allItems = [];
     }
   }
 
   Future<void> updateProduct(String id, Product newProduct) async {
     final prodIndex = allItems.indexWhere((prod) => prod.id == id);
     final url =
-        "https://shop-app-472ce-default-rtdb.firebaseio.com/products/$id.json";
+        "https://shop-app-472ce-default-rtdb.firebaseio.com/products/$id.json?=auth=$token";
     await http.patch(
       url,
       body: jsonEncode({
@@ -158,7 +178,7 @@ class Products with ChangeNotifier {
 
   Future<void> deleteProd(String prodId) async {
     final url =
-        "https://shop-app-472ce-default-rtdb.firebaseio.com/products/$prodId.json";
+        "https://shop-app-472ce-default-rtdb.firebaseio.com/products/$prodId.json?=auth=$token";
     final existingProdIndex = items.indexWhere((prod) => prod.id == prodId);
     var existingProd = items[existingProdIndex];
     items.removeAt(existingProdIndex);
