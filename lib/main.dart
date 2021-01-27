@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:shop_app/helpers/custom_route.dart';
 import './providers/auth.dart';
 import './providers/orders.dart';
 import './screens/cart_screen.dart';
@@ -13,6 +14,7 @@ import './screens/user_prod_screen.dart';
 import './screens/prod_edit_screen.dart';
 import './screens/auth_screen.dart';
 import './screens/splash_screen.dart';
+// import './helpers/custom_route.dart';
 
 void main() {
   SharedPreferences.setMockInitialValues({});
@@ -62,6 +64,9 @@ class ShopApp extends StatelessWidget {
           theme: ThemeData(
             primaryColor: Colors.orange[800],
             fontFamily: "Lato",
+            pageTransitionsTheme: PageTransitionsTheme(builders: {
+              TargetPlatform.android: CustomPageTransitionBuilder(),
+            }),
           ),
           home: auth.isAuth
               ? ProductOverviewScreen()
